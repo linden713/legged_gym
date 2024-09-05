@@ -176,8 +176,8 @@ class Go2Robot(LeggedRobot):
             self.obs_buf= torch.cat((self.obs_buf, heights), dim=-1)
             self.privileged_obs_buf = self.obs_buf
         # add noise if needed
-        # if self.add_noise:
-        #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+        if self.add_noise:
+            self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
     def create_competition_map(self):
         num_terains = 9
         terrain_width = self.cfg.terrain.terrain_width
@@ -406,7 +406,6 @@ class Go2Robot(LeggedRobot):
             env_ids (List[int]): Environemnt ids
         """
         # base position
-        print(env_ids)
         if self.custom_origins:
             self.root_states[env_ids] = self.base_init_state
             self.root_states[env_ids, :3] += self.env_origins[env_ids]
@@ -743,7 +742,7 @@ class Go2Robot(LeggedRobot):
             self.custom_origins = False
             self.env_origins = torch.zeros(self.num_envs, 3, device=self.device, requires_grad=False)
 
-            self.env_origins[:,0:1] = torch_rand_float(6, 84, (self.num_envs,1), device=self.device)# from 48 to 84
+            self.env_origins[:,0:1] = torch_rand_float(6, 48, (self.num_envs,1), device=self.device)
             self.env_origins[:,1:2] = torch_rand_float(4, 8, (self.num_envs,1), device=self.device)
 
             indices = torch.where((self.env_origins[:, 0:1] >= 60) & (self.env_origins[:, 0:1] <= 72))[0]
@@ -954,7 +953,7 @@ class Go2Robot(LeggedRobot):
         
         # Balance penalty: penalize if air time is significantly different across legs
         air_time_variance = torch.var(self.feet_air_time, dim=1)
-        balance_penalty = air_time_variance * 0.1  # Adjust factor as needed
+        balance_penalty = air_time_variance * 10  # Adjust factor as needed
         rew_airTime -= balance_penalty
         
         return rew_airTime
@@ -972,14 +971,13 @@ class Go2Robot(LeggedRobot):
         # penalize high contact forces
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) -  self.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
 
-    def _reward_distance_to_goal(self):#TODO 
-        # 提取机器人的xy位置
-        robot_position = self.root_states[0, :2]  # 机器人当前的x和y位置
+    # def _reward_feet_height(self):
+    #     # penalize feet too low
 
-        # 计算机器人到终点的欧几里得距离
-        distance_to_goal = torch.norm(robot_position - [108,6], dim=1)
+    #    #self.foot_handles = self.gym.find_asset_rigid_body_index(self.robot_asset, "hip_names")
+    #     #self.foot_pos
+    #     # heights
+    #     #return torch.sum((self.root_states[:, 2].unsqueeze(1) - self.measured_heights).clip(min=0.), dim=1)
 
-        # 奖励为负距离值，距离越小，奖励越高
-        reward = -distance_to_goal
 
-        return reward
+    #     return torch.sum((self.foot_pos[:, :, 2] - self.measured_heights).clip(min=0.), dim=1)

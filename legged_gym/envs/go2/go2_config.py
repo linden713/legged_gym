@@ -64,7 +64,7 @@ class Go2RoughCfg( LeggedRobotCfg ):
             lin_vel_x = [0.5, 2.0] # min max [m/s]
             lin_vel_y = [-0.1, 0.1]   # min max [m/s]
             ang_vel_yaw = [-0.5, 0.5]    # min max [rad/s]
-            heading = [-0.2, 0.2]
+            heading = [0, 0]
 
     class control( LeggedRobotCfg.control ):
         # PD Drive parameters:
@@ -74,7 +74,7 @@ class Go2RoughCfg( LeggedRobotCfg ):
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
         # decimation: Number of control action updates @ sim DT per policy DT
-        decimation = 4
+        decimation = 6#4
 
     class asset( LeggedRobotCfg.asset ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/go2/urdf/go2.urdf'
@@ -101,27 +101,23 @@ class Go2RoughCfg( LeggedRobotCfg ):
 
     class rewards( LeggedRobotCfg.rewards ):
         class scales( LeggedRobotCfg.rewards.scales ):
-            lin_vel_z = 0.
-            ang_vel_xy = 0.
+            termination = -0.
+            tracking_lin_vel = 2.0
+            tracking_ang_vel = 0.5
+            lin_vel_z = -0.0
+            ang_vel_xy = 0.0 # -0.01
             orientation = -0.1
-            base_height = -0. 
             torques = -0.0002
             dof_vel = -2.5e-7
             dof_acc = -2.5e-7
-            action_rate = -0.001
-            collision = -1.
-            termination = -0.
-            dof_pos_limits =-0.1#-0.01
-            dof_vel_limits =-0.
-            dof_torque_limits =-0.
-            tracking_lin_vel = 2.0
-            tracking_ang_vel = 0.5
+            base_height = -0.0 #0 
             feet_air_time =  1.0
-            feet_stumble = -0.01#0 
+            collision = -1.
+            feet_stumble = -0.001#0 
+            action_rate = -0.001
             stand_still = -0.1
-            feet_contact_forces=-0.01
-            
-            distance_to_goal = 0.45
+            dof_pos_limits =-0.1#-0.01
+            #goal_pos = 0.45
 
 # step 1 
 # negtive reward -> -0.001
